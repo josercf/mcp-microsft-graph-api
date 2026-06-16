@@ -28,14 +28,16 @@ export function normalizeGraphError(err: unknown): GraphError {
   };
 }
 
-// Graph client surfaces errors as objects with a `code` property.
-function isGraphError(err: unknown): err is { code: string; message: string } {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    "code" in err &&
-    typeof (err as Record<string, unknown>).code === "string"
-  );
+// Graph client surfaces errors as objects with a `code` property. `message` is
+// optional, but when present it must be a string so it can safely flow into the
+// GraphError contract.
+function isGraphError(err: unknown): err is { code: string; message?: string } {
+  if (typeof err !== "object" || err === null || !("code" in err)) {
+    return false;
+  }
+  const record = err as Record<string, unknown>;
+  if (typeof record.code !== "string") return false;
+  return record.message === undefined || typeof record.message === "string";
 }
 
 export function toolError(message: string): { content: [{ type: "text"; text: string }] } {

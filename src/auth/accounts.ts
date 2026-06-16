@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, chmodSync } from "node:fs";
 import { dirname } from "node:path";
 import type { Account, AccountsFile } from "../types.js";
 import { config } from "../config.js";
@@ -18,6 +18,10 @@ function saveFile(file: AccountsFile): void {
   const dir = dirname(config.accountsPath);
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   writeFileSync(config.accountsPath, JSON.stringify(file, null, 2), { encoding: "utf-8", mode: 0o600 });
+  // The `mode` option above only applies when the file is created; Node ignores it
+  // when overwriting an existing file. Enforce the private permission explicitly so
+  // accounts.json never ends up readable by other users.
+  chmodSync(config.accountsPath, 0o600);
 }
 
 export function listAccounts(): Account[] {

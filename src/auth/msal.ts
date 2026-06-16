@@ -45,7 +45,20 @@ function getPca(): PublicClientApplication {
 // Maps userCode → pending auth state so tools can be split across two calls.
 const pendingAuths = new Map<string, PendingAuth>();
 
+// Drop any pending auths whose device code has already expired. This keeps the
+// Map from growing without bound when a user starts add_account but never
+// confirms it in a long-running server process.
+function prunePendingAuths(): void {
+  const now = Date.now();
+  for (const [code, pending] of pendingAuths) {
+    if (now > pending.expiresAt.getTime()) {
+      pendingAuths.delete(code);
+    }
+  }
+}
+
 export async function initiateDeviceCodeFlow(tenant?: string): Promise<PendingAuth> {
+  prunePendingAuths();
   const pca = tenant ? buildPcaForTenant(tenant) : getPca();
 
   let resolvePending!: (info: { userCode: string; verificationUri: string; message: string }) => void;
@@ -76,6 +89,21 @@ export async function initiateDeviceCodeFlow(tenant?: string): Promise<PendingAu
     expiresAt,
   };
   pendingAuths.set(userCode, pending);
+
+  // Guarantee the entry is dropped once the code expires even if the user never
+  // calls confirm_account_auth. unref() so this timer never keeps the process alive.
+  const ttl = Math.max(0, expiresAt.getTime() - Date.now());
+  const cleanup = setTimeout(() => {
+    if (pendingAuths.get(userCode) === pending) {
+      pendingAuths.delete(userCode);
+    }
+  }, ttl);
+  if (typeof cleanup.unref === "function") cleanup.unref();
+
+  // The auth promise may reject (e.g. code expires) without ever being awaited by
+  // confirm_account_auth. Attach a no-op catch to avoid an unhandled rejection.
+  authPromise.catch(() => {});
+
   return pending;
 }
 

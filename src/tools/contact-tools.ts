@@ -63,12 +63,13 @@ export function registerContactTools(server: McpServer): void {
     {
       query: z.string().describe("Search query (e.g. 'João', 'acme.com', 'Engineering')."),
       top: z.number().int().min(1).max(100).optional().describe("Max results. Default: 25."),
+      nextLink: z.string().optional().describe("Pagination cursor from a previous response."),
       accountId: accountIdField,
     },
-    async ({ query, top, accountId }) => {
+    async ({ query, top, nextLink, accountId }) => {
       try {
         const client = getGraphClient(accountId);
-        const result = await searchContacts(client, { query, top });
+        const result = await searchContacts(client, { query, top, nextLink });
         return toolResult(result);
       } catch (err) {
         return toolError(err instanceof Error ? err.message : String(err));

@@ -33,6 +33,15 @@ const itemRefFields = {
     .describe("Item path relative to root (e.g. '/Documents/report.pdf'). Provide this or itemId."),
 };
 
+// The schema can't express "at least one of itemId/path" in a flat shape, so
+// enforce it explicitly up front for a clear, early error instead of letting it
+// surface deeper in the Graph call.
+function requireItemRef(ref: { itemId?: string; path?: string }): void {
+  if (!ref.itemId && !ref.path) {
+    throw new Error("ITEM_REF_REQUIRED: Provide either itemId or path.");
+  }
+}
+
 export function registerFileTools(server: McpServer): void {
   // ── list_drive_items ───────────────────────────────────────────────────────
   server.tool(
@@ -91,6 +100,7 @@ export function registerFileTools(server: McpServer): void {
     },
     async ({ itemId, path, accountId }) => {
       try {
+        requireItemRef({ itemId, path });
         const client = getGraphClient(accountId);
         const item = await getDriveItem(client, { itemId, path });
         return toolResult(item);
@@ -149,6 +159,7 @@ export function registerFileTools(server: McpServer): void {
     },
     async ({ itemId, path, accountId }) => {
       try {
+        requireItemRef({ itemId, path });
         const client = getGraphClient(accountId);
         const result = await downloadFile(client, { itemId, path });
         return toolResult(result);
@@ -242,6 +253,12 @@ export function registerFileTools(server: McpServer): void {
       accountId,
     }) => {
       try {
+        requireItemRef({ itemId, path });
+        if (!destinationParentId && !destinationParentPath && !newName) {
+          throw new Error(
+            "MOVE_NEEDS_TARGET: Provide at least one of destinationParentId, destinationParentPath, or newName."
+          );
+        }
         const client = getGraphClient(accountId);
         const item = await moveItem(client, {
           itemId,
@@ -267,6 +284,7 @@ export function registerFileTools(server: McpServer): void {
     },
     async ({ itemId, path, accountId }) => {
       try {
+        requireItemRef({ itemId, path });
         const client = getGraphClient(accountId);
         await deleteItem(client, { itemId, path });
         return toolResult({ deleted: true });
@@ -296,6 +314,7 @@ export function registerFileTools(server: McpServer): void {
     },
     async ({ itemId, path, type, scope, accountId }) => {
       try {
+        requireItemRef({ itemId, path });
         const client = getGraphClient(accountId);
         const permission = await createShareLink(client, { itemId, path, type, scope });
         const link = (permission as { link?: { webUrl?: string; type?: string; scope?: string } }).link;

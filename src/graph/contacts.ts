@@ -80,16 +80,22 @@ export async function listContacts(
 
 export async function searchContacts(
   client: Client,
-  params: { query: string; top?: number }
+  params: { query: string; top?: number; nextLink?: string }
 ): Promise<{ items: Partial<Contact>[]; nextLink?: string }> {
-  // $search on contacts requires ConsistencyLevel: eventual
-  const response = (await client
-    .api("/me/contacts")
-    .header("ConsistencyLevel", "eventual")
-    .search(`"${params.query}"`)
-    .select(CONTACT_SUMMARY_FIELDS)
-    .top(params.top ?? 25)
-    .get()) as { value: Partial<Contact>[]; "@odata.nextLink"?: string };
+  let response: { value: Partial<Contact>[]; "@odata.nextLink"?: string };
+
+  if (params.nextLink) {
+    response = (await client.api(params.nextLink).get()) as typeof response;
+  } else {
+    // $search on contacts requires ConsistencyLevel: eventual
+    response = (await client
+      .api("/me/contacts")
+      .header("ConsistencyLevel", "eventual")
+      .search(`"${params.query}"`)
+      .select(CONTACT_SUMMARY_FIELDS)
+      .top(params.top ?? 25)
+      .get()) as typeof response;
+  }
 
   return {
     items: response.value ?? [],

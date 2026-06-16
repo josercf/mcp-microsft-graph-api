@@ -104,11 +104,14 @@ export async function searchEmails(
     response = await client.api(params.nextLink).get() as typeof response;
   } else {
     // $search and $orderby cannot be combined — omit orderby.
+    // Pass the query through as-is so KQL operators (from:, subject:,
+    // hasAttachments:true, …) are honoured. Wrapping it in quotes would turn the
+    // whole thing into a literal phrase search and break those operators.
     response = await client
       .api("/me/messages")
       .select(SUMMARY_FIELDS)
       .top(top)
-      .search(`"${params.query}"`)
+      .search(params.query)
       .get() as typeof response;
   }
 
@@ -229,7 +232,9 @@ export async function deleteEmail(
   params: { messageId: string; permanent?: boolean }
 ): Promise<void> {
   if (params.permanent) {
-    await client.api(`/me/messages/${params.messageId}`).delete();
+    // Permanent deletion is a dedicated Graph action — a plain DELETE only moves
+    // the message to Deleted Items (recoverable), not "forever".
+    await client.api(`/me/messages/${params.messageId}/permanentDelete`).post({});
   } else {
     await client
       .api(`/me/messages/${params.messageId}/move`)
