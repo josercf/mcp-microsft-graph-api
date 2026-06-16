@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerAuthTools } from "./tools/auth-tools.js";
 import { registerMailTools } from "./tools/mail-tools.js";
+import { registerCalendarTools } from "./tools/calendar-tools.js";
 
 const server = new McpServer({
   name: "mcp-microsoft-graph",
@@ -11,8 +12,8 @@ const server = new McpServer({
 
 registerAuthTools(server);
 registerMailTools(server);
+registerCalendarTools(server);
 
-// Phase 3 → registerCalendarTools(server)
 // Phase 4 → registerTodoTools(server)
 // Phase 5 → registerContactTools(server)
 // Phase 6 → registerFileTools(server)
