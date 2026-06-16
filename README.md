@@ -35,6 +35,9 @@ Microsoft (pessoais e corporativas) diretamente pelo seu assistente de IA.
    - `Calendars.ReadWrite`, `Tasks.ReadWrite`, `Contacts.ReadWrite`, `Files.ReadWrite`
    - `offline_access`
 
+> 📖 Passo a passo detalhado, com tabela de scopes e notas de consentimento, em
+> [`docs/SETUP-AZURE.md`](./docs/SETUP-AZURE.md).
+
 ## Variáveis de ambiente
 
 | Variável | Obrigatória | Descrição |
