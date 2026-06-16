@@ -6,14 +6,16 @@ Microsoft (pessoais e corporativas) diretamente pelo seu assistente de IA.
 
 ## Features
 
-| Módulo | Status | Tools |
+**63 tools** cobrindo 6 módulos. Referência completa de cada tool e seus parâmetros em [`docs/TOOLS.md`](./docs/TOOLS.md).
+
+| Módulo | Tools | Destaques |
 |---|---|---|
-| Autenticação multi-conta | ✅ Fase 1 | `add_account`, `confirm_account_auth`, `list_accounts`, `set_default_account`, `remove_account`, `whoami` |
-| Email | 📋 Fase 2 | `list_emails`, `search_emails`, `get_email`, `send_email`, `reply_email`, `forward_email`, `move_email`, `set_email_categories`, `mark_email`, `list_mail_folders`, `create_mail_folder`, `list_categories`, `create_category` |
-| Calendário | 📋 Fase 3 | `list_events`, `create_event`, `update_event`, `delete_event`, `respond_to_event`, `list_calendars`, `find_meeting_times` |
-| To-Do | 📋 Fase 4 | `list_task_lists`, `create_task_list`, `rename_task_list`, `delete_task_list`, `list_tasks`, `create_task`, `update_task`, `complete_task`, `move_task`, `add_subtask`, ... |
-| Contatos | 📋 Fase 5 | `list_contacts`, `search_contacts`, `create_contact`, `update_contact`, `delete_contact` |
-| OneDrive | 📋 Fase 6 | `list_drive_items`, `search_drive`, `download_file`, `upload_file`, `create_folder`, `move_item`, `delete_item`, `create_share_link` |
+| Autenticação multi-conta | 6 | Device Code Flow em 2 etapas, multi-conta (pessoal + corporativa), conta padrão configurável |
+| Email | 17 | Listagem, busca KQL, envio, rascunho, resposta, encaminhamento, mover/arquivar, categorias (tags Outlook), flags, pastas |
+| Calendário | 8 | `calendarView` (expande recorrências), criar com convidados + Teams, aceitar/recusar, `find_meeting_times` |
+| To-Do | 15 | CRUD de listas e tarefas, subtarefas (checklistItems), `move_task` |
+| Contatos | 6 | CRUD + busca full-text via `$search` com paginação |
+| OneDrive | 11 | Navegar, buscar, download via pre-authed URL, upload simples + chunked, compartilhar |
 
 ## Pré-requisitos
 
@@ -57,6 +59,36 @@ export GRAPH_CLIENT_ID="seu-client-id-aqui"
 # Execute
 npm start
 ```
+
+### Scripts disponíveis
+
+| Script | O que faz |
+|---|---|
+| `npm run build` | Compila TypeScript → `dist/` |
+| `npm start` | Roda o servidor compilado (`dist/index.js`) via stdio |
+| `npm run dev` | Roda direto do fonte com `tsx` (sem build) |
+| `npm run typecheck` | Type-check sem emitir arquivos |
+
+## Verificação rápida (smoke test)
+
+Você pode confirmar que o servidor inicializa e registra todas as tools **sem
+precisar de credenciais Microsoft** — a autenticação é preguiçosa (lazy) e só é
+acionada quando uma tool é de fato chamada. Faça o handshake MCP via stdio e liste
+as tools:
+
+```bash
+npm run build
+
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"smoke","version":"0"}}}' \
+  '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
+  | GRAPH_CLIENT_ID="dummy" node dist/index.js
+```
+
+A segunda resposta JSON-RPC (`"id":2`) deve listar as **63 tools**. Um teste
+funcional de verdade (com chamadas reais ao Graph) exige um `GRAPH_CLIENT_ID`
+válido e autenticação interativa via `add_account` → `confirm_account_auth`.
 
 ## Configuração no Claude Desktop (ou outro cliente MCP)
 
