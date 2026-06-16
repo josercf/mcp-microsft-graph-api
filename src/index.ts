@@ -6,6 +6,7 @@ import { registerMailTools } from "./tools/mail-tools.js";
 import { registerCalendarTools } from "./tools/calendar-tools.js";
 import { registerTodoTools } from "./tools/todo-tools.js";
 import { registerContactTools } from "./tools/contact-tools.js";
+import { registerFileTools } from "./tools/file-tools.js";
 
 const server = new McpServer({
   name: "mcp-microsoft-graph",
@@ -17,8 +18,7 @@ registerMailTools(server);
 registerCalendarTools(server);
 registerTodoTools(server);
 registerContactTools(server);
-
-// Phase 6 → registerFileTools(server)
+registerFileTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
