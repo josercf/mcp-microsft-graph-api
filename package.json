@@ -1,0 +1,31 @@
+{
+  "name": "mcp-microsoft-graph",
+  "version": "1.0.0",
+  "description": "MCP server for Microsoft Graph API — email, calendar, to-do, contacts and OneDrive",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-microsoft-graph": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@azure/msal-node": "^2.9.2",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "@microsoft/microsoft-graph-types": "^2.40.0",
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
