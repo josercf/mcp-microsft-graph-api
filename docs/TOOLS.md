@@ -70,7 +70,7 @@ Referência completa das **66 tools** expostas pelo servidor MCP, agrupadas por 
 | `delete_task_list` | Deletes a To-Do task list and all tasks in it. System lists (e.g. 'Tasks', 'Flagged Email') cannot be deleted. | `listId`*, `accountId` |
 | `list_tasks` | Lists tasks in a To-Do list. Filter by status: open (default), completed or all. | `listId`*, `status`, `top`, `nextLink`, `accountId` |
 | `get_task` | Gets a task with full details: notes, recurrence and subtasks (checklist items). | `listId`*, `taskId`*, `includeSubtasks`, `accountId` |
-| `create_task` | Creates a new task in a To-Do list. | `listId`*, `title`*, `dueDateTime`, `reminderDateTime`, `importance`, `body`, `categories`, `recurrence`, `accountId` |
+| `create_task` | Creates a new task in a To-Do list. Note: when setting `recurrence`, `dueDateTime` is required. | `listId`*, `title`*, `dueDateTime`, `reminderDateTime`, `importance`, `body`, `categories`, `recurrence`, `accountId` |
 | `update_task` | Updates one or more fields of an existing task. Only provided fields are changed. | `listId`*, `taskId`*, `title`, `dueDateTime`, `reminderDateTime`, `importance`, `body`, `categories`, `recurrence`, `accountId` |
 | `complete_task` | Marks a task as completed or reopens it. | `listId`*, `taskId`*, `completed`, `accountId` |
 | `delete_task` | Permanently deletes a task and all its subtasks. | `listId`*, `taskId`*, `accountId` |
