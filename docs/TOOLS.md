@@ -1,11 +1,11 @@
 # Referência de Tools
 
-Referência completa das **63 tools** expostas pelo servidor MCP, agrupadas por módulo. Parâmetros marcados com `*` são obrigatórios. O parâmetro `accountId` é sempre opcional e, quando omitido, usa a conta padrão.
+Referência completa das **66 tools** expostas pelo servidor MCP, agrupadas por módulo. Parâmetros marcados com `*` são obrigatórios. O parâmetro `accountId` é sempre opcional e, quando omitido, usa a conta padrão.
 
 ## Índice
 
 - [Autenticação](#autenticacao) (6)
-- [Email](#email) (17)
+- [Email](#email) (20)
 - [Calendário](#calendario) (8)
 - [To-Do](#to-do) (15)
 - [Contatos](#contatos) (6)
@@ -43,6 +43,9 @@ Referência completa das **63 tools** expostas pelo servidor MCP, agrupadas por 
 | `create_mail_folder` | Creates a new mail folder. Provide parentFolderId to create a subfolder. | `displayName`*, `parentFolderId`, `accountId` |
 | `list_categories` | Lists all Outlook colour categories available in the account (the master category palette). | `accountId` |
 | `create_category` | Creates a new Outlook colour category. Color presets: preset0 (red) through preset24. Leave blank for no colour. | `displayName`*, `color`, `accountId` |
+| `list_inbox_rules` | Lists the inbox rules (automatic mail-handling rules) configured on the account, including their conditions and actions. | `accountId` |
+| `create_inbox_rule` | Creates an inbox rule that automatically processes incoming mail. Provide at least one condition and one action. A message matches when ALL given conditions are met. Use list_mail_folders to get a folder ID for moveToFolderId. | `displayName`*, `fromAddresses`, `senderContains`, `subjectContains`, `bodyContains`, `moveToFolderId`, `markAsRead`, `delete`, `assignCategories`, `stopProcessingRules`, `isEnabled`, `sequence`, `accountId` |
+| `delete_inbox_rule` | Deletes an inbox rule by ID (get IDs from list_inbox_rules). | `ruleId`*, `accountId` |
 
 ## Calendário
 

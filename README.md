@@ -6,12 +6,12 @@ Microsoft (pessoais e corporativas) diretamente pelo seu assistente de IA.
 
 ## Features
 
-**63 tools** cobrindo 6 módulos. Referência completa de cada tool e seus parâmetros em [`docs/TOOLS.md`](./docs/TOOLS.md).
+**66 tools** cobrindo 6 módulos. Referência completa de cada tool e seus parâmetros em [`docs/TOOLS.md`](./docs/TOOLS.md).
 
 | Módulo | Tools | Destaques |
 |---|---|---|
 | Autenticação multi-conta | 6 | Device Code Flow em 2 etapas, multi-conta (pessoal + corporativa), conta padrão configurável |
-| Email | 17 | Listagem, busca KQL, envio, rascunho, resposta, encaminhamento, mover/arquivar, categorias (tags Outlook), flags, pastas |
+| Email | 20 | Listagem, busca KQL, envio, rascunho, resposta, encaminhamento, mover/arquivar, categorias (tags Outlook), flags, pastas, regras de caixa de entrada |
 | Calendário | 8 | `calendarView` (expande recorrências), criar com convidados + Teams, aceitar/recusar, `find_meeting_times` |
 | To-Do | 15 | CRUD de listas e tarefas, subtarefas (checklistItems), `move_task` |
 | Contatos | 6 | CRUD + busca full-text via `$search` com paginação |
@@ -89,7 +89,7 @@ printf '%s\n' \
   | GRAPH_CLIENT_ID="dummy" node dist/index.js
 ```
 
-A segunda resposta JSON-RPC (`"id":2`) deve listar as **63 tools**. Um teste
+A segunda resposta JSON-RPC (`"id":2`) deve listar as **66 tools**. Um teste
 funcional de verdade (com chamadas reais ao Graph) exige um `GRAPH_CLIENT_ID`
 válido e autenticação interativa via `add_account` → `confirm_account_auth`.
 

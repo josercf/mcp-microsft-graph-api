@@ -5,6 +5,7 @@ import type {
   FileAttachment,
   MailFolder,
   OutlookCategory,
+  MessageRule,
 } from "@microsoft/microsoft-graph-types";
 
 // ── Field selectors ──────────────────────────────────────────────────────────
@@ -315,4 +316,82 @@ export async function createCategory(
     displayName: params.displayName,
     ...(params.color && { color: params.color }),
   }) as Promise<Partial<OutlookCategory>>;
+}
+
+// ── Inbox rules (message rules) ───────────────────────────────────────────────
+
+export interface CreateInboxRuleInput {
+  displayName: string;
+  sequence?: number;
+  isEnabled?: boolean;
+  // Conditions — a message matches when ALL provided conditions are met.
+  fromAddresses?: string[];
+  senderContains?: string[];
+  subjectContains?: string[];
+  bodyContains?: string[];
+  // Actions — applied when the rule matches.
+  moveToFolderId?: string;
+  markAsRead?: boolean;
+  delete?: boolean;
+  assignCategories?: string[];
+  stopProcessingRules?: boolean;
+}
+
+export async function listInboxRules(client: Client): Promise<Partial<MessageRule>[]> {
+  const response = (await client
+    .api("/me/mailFolders/inbox/messageRules")
+    .get()) as { value: Partial<MessageRule>[] };
+  return response.value ?? [];
+}
+
+export async function createInboxRule(
+  client: Client,
+  input: CreateInboxRuleInput
+): Promise<Partial<MessageRule>> {
+  const conditions: Record<string, unknown> = {};
+  if (input.fromAddresses?.length) {
+    conditions.fromAddresses = toRecipientList(input.fromAddresses);
+  }
+  if (input.senderContains?.length) conditions.senderContains = input.senderContains;
+  if (input.subjectContains?.length) conditions.subjectContains = input.subjectContains;
+  if (input.bodyContains?.length) conditions.bodyContains = input.bodyContains;
+
+  const actions: Record<string, unknown> = {};
+  if (input.moveToFolderId) actions.moveToFolder = input.moveToFolderId;
+  if (input.markAsRead) actions.markAsRead = true;
+  if (input.delete) actions.delete = true;
+  if (input.assignCategories?.length) actions.assignCategories = input.assignCategories;
+  if (input.stopProcessingRules) actions.stopProcessingRules = true;
+
+  if (Object.keys(conditions).length === 0) {
+    throw new Error(
+      "RULE_NEEDS_CONDITION: Provide at least one condition " +
+        "(fromAddresses, senderContains, subjectContains or bodyContains)."
+    );
+  }
+  if (Object.keys(actions).length === 0) {
+    throw new Error(
+      "RULE_NEEDS_ACTION: Provide at least one action " +
+        "(moveToFolderId, markAsRead, delete, assignCategories or stopProcessingRules)."
+    );
+  }
+
+  const body: Record<string, unknown> = {
+    displayName: input.displayName,
+    isEnabled: input.isEnabled ?? true,
+    conditions,
+    actions,
+    ...(input.sequence !== undefined && { sequence: input.sequence }),
+  };
+
+  return client
+    .api("/me/mailFolders/inbox/messageRules")
+    .post(body) as Promise<Partial<MessageRule>>;
+}
+
+export async function deleteInboxRule(
+  client: Client,
+  params: { ruleId: string }
+): Promise<void> {
+  await client.api(`/me/mailFolders/inbox/messageRules/${params.ruleId}`).delete();
 }
