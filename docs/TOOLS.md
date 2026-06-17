@@ -97,7 +97,7 @@ Referência completa das **66 tools** expostas pelo servidor MCP, agrupadas por 
 |---|---|---|
 | `list_drive_items` | Lists files and folders inside a OneDrive folder. Omit both folderId and path to list the root. Results include type (file/folder), size and last modified date. | `folderId`, `path`, `top`, `nextLink`, `accountId` |
 | `search_drive` | Searches OneDrive for files and folders by name or content. | `query`*, `top`, `nextLink`, `accountId` |
-| `get_drive_item` | Gets metadata of a OneDrive file or folder (name, size, type, last modified, web URL). | `itemId`, `path`, `accountId` |
+| `get_drive_item` | Gets metadata of a OneDrive file or folder (name, size, type, last modified, web URL). Requires either `itemId` or `path`. | `itemId`, `path`, `accountId` |
 | `list_recent_files` | Lists the most recently accessed files in OneDrive. | `top`, `accountId` |
 | `list_shared_with_me` | Lists files and folders that others have shared with the account. | `top`, `accountId` |
 | `download_file` | Downloads the content of a OneDrive file and returns it as base64. Limited to files ≤ 4 MB. For larger files, use the webUrl returned by get_drive_item. | `itemId`, `path`, `accountId` |
