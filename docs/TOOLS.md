@@ -105,5 +105,5 @@ Referência completa das **66 tools** expostas pelo servidor MCP, agrupadas por 
 | `create_folder` | Creates a new folder in OneDrive. If a folder with that name already exists, the new one is auto-renamed. | `name`*, `parentId`, `parentPath`, `accountId` |
 | `move_item` | Moves and/or renames a OneDrive file or folder. Requires either `itemId` or `path`. Provide at least one of: destinationParentId, destinationParentPath, or newName. | `itemId`, `path`, `destinationParentId`, `destinationParentPath`, `newName`, `accountId` |
 | `delete_item` | Moves a OneDrive file or folder to the Recycle Bin. The item can be restored from there. | `itemId`, `path`, `accountId` |
-| `create_share_link` | Generates a sharing link for a OneDrive file or folder. type 'view' = read-only, 'edit' = read-write. scope 'anonymous' = anyone with the link, 'organization' = only people in the same org (work accounts only). | `itemId`, `path`, `type`, `scope`, `accountId` |
+| `create_share_link` | Generates a sharing link for a OneDrive file or folder. Requires either `itemId` or `path`. type 'view' = read-only, 'edit' = read-write. scope 'anonymous' = anyone with the link, 'organization' = only people in the same org (work accounts only). | `itemId`, `path`, `type`, `scope`, `accountId` |
 
