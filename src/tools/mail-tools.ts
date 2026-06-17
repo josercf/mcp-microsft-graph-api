@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getGraphClient } from "../graph/client.js";
-import { toolResult, toolError } from "../utils/errors.js";
+import { toolResult, toolError, describeError } from "../utils/errors.js";
 import {
   listEmails,
   searchEmails,
@@ -18,6 +18,9 @@ import {
   createMailFolder,
   listCategories,
   createCategory,
+  listInboxRules,
+  createInboxRule,
+  deleteInboxRule,
 } from "../graph/mail.js";
 
 const accountIdField = z
@@ -440,6 +443,132 @@ export function registerMailTools(server: McpServer): void {
         return toolResult(category);
       } catch (err) {
         return toolError(err instanceof Error ? err.message : String(err));
+      }
+    }
+  );
+
+  // ── list_inbox_rules ───────────────────────────────────────────────────────
+  server.tool(
+    "list_inbox_rules",
+    "Lists the inbox rules (automatic mail-handling rules) configured on the account, " +
+      "including their conditions and actions.",
+    { accountId: accountIdField },
+    async ({ accountId }) => {
+      try {
+        const client = getGraphClient(accountId);
+        const rules = await listInboxRules(client);
+        return toolResult({ rules, total: rules.length });
+      } catch (err) {
+        return toolError(describeError(err));
+      }
+    }
+  );
+
+  // ── create_inbox_rule ──────────────────────────────────────────────────────
+  server.tool(
+    "create_inbox_rule",
+    "Creates an inbox rule that automatically processes incoming mail. " +
+      "Provide at least one condition and one action. A message matches when ALL " +
+      "given conditions are met. Use list_mail_folders to get a folder ID for moveToFolderId.",
+    {
+      displayName: z.string().describe("Name of the rule."),
+      // Conditions
+      fromAddresses: z
+        .array(z.string())
+        .optional()
+        .describe("Match when the sender is one of these exact email addresses."),
+      senderContains: z
+        .array(z.string())
+        .optional()
+        .describe("Match when the sender name/address contains any of these strings."),
+      subjectContains: z
+        .array(z.string())
+        .optional()
+        .describe("Match when the subject contains any of these strings."),
+      bodyContains: z
+        .array(z.string())
+        .optional()
+        .describe("Match when the body contains any of these strings."),
+      // Actions
+      moveToFolderId: z
+        .string()
+        .optional()
+        .describe("Folder ID to move matching messages to (from list_mail_folders)."),
+      markAsRead: z.boolean().optional().describe("Mark matching messages as read."),
+      delete: z
+        .boolean()
+        .optional()
+        .describe("Move matching messages to Deleted Items (recoverable)."),
+      assignCategories: z
+        .array(z.string())
+        .optional()
+        .describe("Outlook category names to assign to matching messages."),
+      stopProcessingRules: z
+        .boolean()
+        .optional()
+        .describe("Stop evaluating later rules once this one matches."),
+      // Meta
+      isEnabled: z.boolean().optional().describe("Whether the rule is active. Default: true."),
+      sequence: z
+        .number()
+        .int()
+        .optional()
+        .describe("Order in which the rule runs relative to others (lower runs first)."),
+      accountId: accountIdField,
+    },
+    async ({
+      displayName,
+      fromAddresses,
+      senderContains,
+      subjectContains,
+      bodyContains,
+      moveToFolderId,
+      markAsRead,
+      delete: del,
+      assignCategories,
+      stopProcessingRules,
+      isEnabled,
+      sequence,
+      accountId,
+    }) => {
+      try {
+        const client = getGraphClient(accountId);
+        const rule = await createInboxRule(client, {
+          displayName,
+          fromAddresses,
+          senderContains,
+          subjectContains,
+          bodyContains,
+          moveToFolderId,
+          markAsRead,
+          delete: del,
+          assignCategories,
+          stopProcessingRules,
+          isEnabled,
+          sequence,
+        });
+        return toolResult({ id: rule.id, displayName: rule.displayName, isEnabled: rule.isEnabled });
+      } catch (err) {
+        return toolError(describeError(err));
+      }
+    }
+  );
+
+  // ── delete_inbox_rule ──────────────────────────────────────────────────────
+  server.tool(
+    "delete_inbox_rule",
+    "Deletes an inbox rule by ID (get IDs from list_inbox_rules).",
+    {
+      ruleId: z.string().describe("Inbox rule ID (from list_inbox_rules)."),
+      accountId: accountIdField,
+    },
+    async ({ ruleId, accountId }) => {
+      try {
+        const client = getGraphClient(accountId);
+        await deleteInboxRule(client, { ruleId });
+        return toolResult({ deleted: true });
+      } catch (err) {
+        return toolError(describeError(err));
       }
     }
   );

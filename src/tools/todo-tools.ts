@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getGraphClient } from "../graph/client.js";
-import { toolResult, toolError } from "../utils/errors.js";
+import { toolResult, toolError, describeError } from "../utils/errors.js";
 import {
   listTaskLists,
   createTaskList,
@@ -70,7 +70,7 @@ export function registerTodoTools(server: McpServer): void {
         const lists = await listTaskLists(client);
         return toolResult({ lists, total: lists.length });
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -89,7 +89,7 @@ export function registerTodoTools(server: McpServer): void {
         const list = await createTaskList(client, { displayName });
         return toolResult({ id: list.id, displayName: list.displayName });
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -109,7 +109,7 @@ export function registerTodoTools(server: McpServer): void {
         const list = await renameTaskList(client, { listId, displayName });
         return toolResult({ id: list.id, displayName: list.displayName });
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -129,7 +129,7 @@ export function registerTodoTools(server: McpServer): void {
         await deleteTaskList(client, { listId });
         return toolResult({ deleted: true });
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -158,7 +158,7 @@ export function registerTodoTools(server: McpServer): void {
         const result = await listTasks(client, { listId, status, top, nextLink });
         return toolResult(result);
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -186,7 +186,7 @@ export function registerTodoTools(server: McpServer): void {
         });
         return toolResult(result);
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -240,7 +240,7 @@ export function registerTodoTools(server: McpServer): void {
         });
         return toolResult({ id: task.id, title: task.title, status: task.status });
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -294,7 +294,7 @@ export function registerTodoTools(server: McpServer): void {
         });
         return toolResult({ id: task.id, title: task.title, status: task.status });
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -322,7 +322,7 @@ export function registerTodoTools(server: McpServer): void {
         });
         return toolResult({ id: task.id, status: task.status });
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -342,7 +342,7 @@ export function registerTodoTools(server: McpServer): void {
         await deleteTask(client, { listId, taskId });
         return toolResult({ deleted: true });
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -369,7 +369,7 @@ export function registerTodoTools(server: McpServer): void {
         });
         return toolResult(result);
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -393,7 +393,7 @@ export function registerTodoTools(server: McpServer): void {
         const subtasks = await listChecklistItems(client, { listId, taskId });
         return toolResult({ subtasks, total: subtasks.length });
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -423,7 +423,7 @@ export function registerTodoTools(server: McpServer): void {
         });
         return toolResult(item);
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -455,7 +455,7 @@ export function registerTodoTools(server: McpServer): void {
         });
         return toolResult(item);
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );
@@ -476,7 +476,7 @@ export function registerTodoTools(server: McpServer): void {
         await deleteChecklistItem(client, { listId, taskId, checklistItemId });
         return toolResult({ deleted: true });
       } catch (err) {
-        return toolError(err instanceof Error ? err.message : String(err));
+        return toolError(describeError(err));
       }
     }
   );

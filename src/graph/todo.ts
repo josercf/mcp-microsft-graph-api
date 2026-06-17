@@ -7,8 +7,6 @@ import type {
 
 // ── Field selectors ──────────────────────────────────────────────────────────
 
-const LIST_FIELDS = "id,displayName,wellknownListName,isOwner,isShared";
-
 const TASK_SUMMARY_FIELDS =
   "id,title,status,importance,dueDateTime,reminderDateTime," +
   "isReminderOn,categories,hasChecklistItems,createdDateTime,lastModifiedDateTime";
@@ -68,10 +66,12 @@ function buildTaskPatch(input: UpdateTaskInput): Record<string, unknown> {
 export async function listTaskLists(
   client: Client
 ): Promise<Partial<TodoTaskList>[]> {
+  // /me/todo/lists only supports *some* OData params and returns 400
+  // "Invalid request" for unsupported $select/$top combinations. The list fields
+  // we need (id, displayName, isOwner, isShared, wellknownListName) are returned
+  // by default anyway, so query without them.
   const response = (await client
     .api("/me/todo/lists")
-    .select(LIST_FIELDS)
-    .top(100)
     .get()) as { value: Partial<TodoTaskList>[] };
   return response.value ?? [];
 }

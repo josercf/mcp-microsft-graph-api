@@ -44,6 +44,41 @@ export function toolError(message: string): { content: [{ type: "text"; text: st
   return { content: [{ type: "text" as const, text: `Error: ${message}` }] };
 }
 
+// Builds a human-readable message from an unknown thrown value. Graph SDK errors
+// carry the useful detail in `code`/`statusCode`/`body` rather than just `message`
+// (e.g. a 400 surfaces as "Invalid request" unless we read the body), so pull
+// those out to make failures actionable instead of opaque.
+export function describeError(err: unknown): string {
+  if (typeof err === "object" && err !== null) {
+    const e = err as {
+      code?: unknown;
+      statusCode?: unknown;
+      message?: unknown;
+      body?: unknown;
+    };
+
+    let bodyMessage: string | undefined;
+    if (typeof e.body === "string" && e.body) {
+      try {
+        const parsed = JSON.parse(e.body) as { error?: { message?: string }; message?: string };
+        bodyMessage = parsed?.error?.message ?? parsed?.message;
+      } catch {
+        // body wasn't JSON — ignore
+      }
+    }
+
+    const code = typeof e.code === "string" ? e.code : undefined;
+    const detail = bodyMessage ?? (typeof e.message === "string" ? e.message : undefined);
+    const head = [code, detail].filter(Boolean).join(": ");
+    if (head) {
+      return typeof e.statusCode === "number" ? `${head} (HTTP ${e.statusCode})` : head;
+    }
+  }
+
+  if (err instanceof Error) return err.message;
+  return String(err);
+}
+
 export function toolResult(data: unknown): { content: [{ type: "text"; text: string }] } {
   return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
 }
