@@ -100,7 +100,7 @@ Referência completa das **66 tools** expostas pelo servidor MCP, agrupadas por 
 | `get_drive_item` | Gets metadata of a OneDrive file or folder (name, size, type, last modified, web URL). Requires either `itemId` or `path`. | `itemId`, `path`, `accountId` |
 | `list_recent_files` | Lists the most recently accessed files in OneDrive. | `top`, `accountId` |
 | `list_shared_with_me` | Lists files and folders that others have shared with the account. | `top`, `accountId` |
-| `download_file` | Downloads the content of a OneDrive file and returns it as base64. Limited to files ≤ 4 MB. For larger files, use the webUrl returned by get_drive_item. | `itemId`, `path`, `accountId` |
+| `download_file` | Downloads the content of a OneDrive file and returns it as base64. Requires either `itemId` or `path`. Limited to files ≤ 4 MB. For larger files, use the webUrl returned by get_drive_item. | `itemId`, `path`, `accountId` |
 | `upload_file` | Uploads a file to OneDrive. Provide the destination path and file content as base64. Files ≤ 4 MB are uploaded in a single request; larger files use a chunked upload session. conflictBehavior controls what happens if a file already exists at the path. | `path`*, `contentBase64`*, `conflictBehavior`, `accountId` |
 | `create_folder` | Creates a new folder in OneDrive. If a folder with that name already exists, the new one is auto-renamed. | `name`*, `parentId`, `parentPath`, `accountId` |
 | `move_item` | Moves and/or renames a OneDrive file or folder. Provide at least one of: destinationParentId, destinationParentPath, or newName. | `itemId`, `path`, `destinationParentId`, `destinationParentPath`, `newName`, `accountId` |
