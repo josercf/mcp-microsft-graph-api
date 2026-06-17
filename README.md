@@ -46,6 +46,28 @@ Microsoft (pessoais e corporativas) diretamente pelo seu assistente de IA.
 | `GRAPH_TENANT` | Não | `common` (default), `consumers`, `organizations` ou GUID do tenant. |
 | `GRAPH_TOKEN_CACHE_PATH` | Não | Caminho do cache de tokens. Default: `~/.mcp-graph/token-cache.json`. |
 | `GRAPH_DEFAULT_ACCOUNT` | Não | `accountId` da conta padrão. |
+| `GRAPH_DEBUG` | Não | `1`/`true` liga logs de depuração (requisições e erros do Graph) em **stderr**. |
+| `GRAPH_LOG_FILE` | Não | Se definido, além do stderr os logs são anexados a este arquivo. |
+
+## Depuração (logs)
+
+O servidor nunca escreve logs em **stdout** (reservado ao protocolo MCP). Com
+`GRAPH_DEBUG=1`, ele registra em **stderr** cada requisição ao Graph e o detalhe
+completo dos erros (código, `statusCode`, `requestId` e o `body` da resposta) —
+útil para diagnosticar respostas `400 Invalid request`.
+
+```jsonc
+// claude_desktop_config.json
+"env": {
+  "GRAPH_CLIENT_ID": "seu-client-id",
+  "GRAPH_DEBUG": "1",
+  "GRAPH_LOG_FILE": "/tmp/mcp-graph.log"   // opcional: persiste os logs em arquivo
+}
+```
+
+O Claude Desktop expõe o stderr do servidor nos logs MCP
+(`~/Library/Logs/Claude/mcp-server-microsoft-graph.log` no macOS). Com
+`GRAPH_LOG_FILE`, basta `tail -f /tmp/mcp-graph.log` para acompanhar.
 
 ## Instalação e uso
 

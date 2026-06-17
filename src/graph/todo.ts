@@ -4,6 +4,7 @@ import type {
   TodoTask,
   ChecklistItem,
 } from "@microsoft/microsoft-graph-types";
+import { logDebug, logError } from "../utils/logger.js";
 
 // ── Field selectors ──────────────────────────────────────────────────────────
 
@@ -70,9 +71,11 @@ export async function listTaskLists(
   // "Invalid request" for unsupported $select/$top combinations. The list fields
   // we need (id, displayName, isOwner, isShared, wellknownListName) are returned
   // by default anyway, so query without them.
+  logDebug("listTaskLists", "GET /me/todo/lists");
   const response = (await client
     .api("/me/todo/lists")
     .get()) as { value: Partial<TodoTaskList>[] };
+  logDebug("listTaskLists", `ok — ${response.value?.length ?? 0} lists`);
   return response.value ?? [];
 }
 
@@ -112,28 +115,42 @@ export async function listTasks(
     nextLink?: string;
   }
 ): Promise<{ items: Partial<TodoTask>[]; nextLink?: string }> {
+  const statusFilter = params.status ?? "open";
+
+  // Status is filtered client-side: the To-Do tasks endpoint can reject
+  // server-side $filter (e.g. `status ne 'completed'`) with 400 "Invalid
+  // request" on some (notably personal) accounts.
+  const filterByStatus = (items: Partial<TodoTask>[]): Partial<TodoTask>[] => {
+    if (statusFilter === "open") return items.filter((t) => t.status !== "completed");
+    if (statusFilter === "completed") return items.filter((t) => t.status === "completed");
+    return items;
+  };
+
   let response: { value: Partial<TodoTask>[]; "@odata.nextLink"?: string };
 
   if (params.nextLink) {
+    logDebug("listTasks", "GET nextLink page");
     response = (await client.api(params.nextLink).get()) as typeof response;
   } else {
-    let api = client
-      .api(`/me/todo/lists/${params.listId}/tasks`)
-      .select(TASK_SUMMARY_FIELDS)
-      .top(params.top ?? 50);
-
-    const statusFilter = params.status ?? "open";
-    if (statusFilter === "open") {
-      api = api.filter("status ne 'completed'");
-    } else if (statusFilter === "completed") {
-      api = api.filter("status eq 'completed'");
+    const endpoint = `/me/todo/lists/${params.listId}/tasks`;
+    const top = params.top ?? 50;
+    try {
+      logDebug("listTasks", `GET ${endpoint}`, { top, status: statusFilter, mode: "select+top" });
+      response = (await client
+        .api(endpoint)
+        .select(TASK_SUMMARY_FIELDS)
+        .top(top)
+        .get()) as typeof response;
+    } catch (err) {
+      // Fall back to a bare request if $select/$top is rejected by this account.
+      logError("listTasks", `select+top failed, retrying bare ${endpoint}`, err);
+      response = (await client.api(endpoint).get()) as typeof response;
     }
-
-    response = (await api.get()) as typeof response;
   }
 
+  logDebug("listTasks", `ok — ${response.value?.length ?? 0} tasks (pre-filter)`);
   return {
-    items: response.value ?? [],
+    items: filterByStatus(response.value ?? []),
     nextLink: response["@odata.nextLink"],
   };
 }

@@ -1,4 +1,5 @@
 import type { GraphError } from "../types.js";
+import { logError } from "./logger.js";
 
 // Known Graph error codes that are worth retrying (throttling, transient).
 const RETRYABLE_CODES = new Set([
@@ -49,6 +50,9 @@ export function toolError(message: string): { content: [{ type: "text"; text: st
 // (e.g. a 400 surfaces as "Invalid request" unless we read the body), so pull
 // those out to make failures actionable instead of opaque.
 export function describeError(err: unknown): string {
+  // Surface the full error to the debug log (no-op unless GRAPH_DEBUG is set).
+  logError("tool", "operation failed:", err);
+
   if (typeof err === "object" && err !== null) {
     const e = err as {
       code?: unknown;
